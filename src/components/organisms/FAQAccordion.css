@@ -1,0 +1,31 @@
+.faq-accordion {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  gap: 2rem;
+}
+
+.faq-accordion__intro {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.faq-accordion__intro p {
+  margin: 0;
+  color: var(--color-neutral-600);
+  line-height: 1.65;
+  max-width: 720px;
+}
+
+.faq-accordion__list {
+  display: grid;
+}
+
+.faq-accordion__details {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.35rem;
+  color: var(--color-neutral-600);
+}

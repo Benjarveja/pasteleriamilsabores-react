@@ -1,0 +1,154 @@
+.reviews-section {
+  max-width: 1100px;
+  margin: 0 auto 5rem;
+  padding: 0 1.5rem;
+}
+
+
+.reviews-section {
+  max-width: 1100px;
+  margin: 0 auto 5rem;
+  padding: 0 1.5rem;
+}
+
+.reviews-section__subtitle {
+  text-align: center;
+  color: rgba(93, 64, 55, 0.75);
+  margin: 0 auto 2.5rem;
+  max-width: 620px;
+}
+
+.reviews-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.reviews-carousel__viewport {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+}
+
+.reviews-carousel__wrapper {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.reviews-carousel__slide {
+  min-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.reviews-carousel__control {
+  background: rgba(255, 192, 203, 0.85);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  display: grid;
+  place-items: center;
+  color: var(--brand-brown-dark);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.reviews-carousel__control:hover {
+  background: rgba(255, 192, 203, 1);
+}
+
+.reviews-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.reviews-carousel__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(93, 64, 55, 0.25);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.reviews-carousel__dot.is-active {
+  background: var(--brand-brown-light);
+  transform: scale(1.3);
+}
+
+@media (max-width: 900px) {
+  .reviews-section {
+    padding: 0 clamp(1rem, 4vw, 1.75rem);
+  }
+
+  .reviews-carousel {
+    gap: 0.5rem;
+  }
+
+  .reviews-carousel__control {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reviews-section {
+    margin-bottom: 3.5rem;
+    padding: 0 1rem;
+  }
+
+  .reviews-carousel {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .reviews-carousel__viewport {
+    width: 100%;
+    max-width: 420px;
+    order: 1;
+  }
+
+  .reviews-carousel__dots {
+    order: 2;
+  }
+
+  .reviews-carousel__control {
+    position: static;
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+    transform: none;
+    order: 0;
+  }
+
+  .reviews-carousel__control--next {
+    order: 3;
+  }
+
+  .reviews-carousel__slide {
+    padding: 0.25rem 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .reviews-section {
+    padding: 0 0.75rem;
+  }
+
+  .reviews-carousel__viewport {
+    max-width: 360px;
+  }
+
+  .reviews-carousel__control {
+    width: 32px;
+    height: 32px;
+  }
+}
