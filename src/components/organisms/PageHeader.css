@@ -1,0 +1,63 @@
+.page-header {
+  width: 100%;
+  padding: 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header__content {
+  max-width: 1024px;
+  text-align: center;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.page-header__eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  margin: 0;
+}
+
+.page-header__description {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: 1.1rem;
+  line-height: 1.75;
+}
+
+.page-header--default {
+  background: var(--color-neutral-50);
+}
+
+.page-header--pastel {
+  background: linear-gradient(140deg, rgba(255, 221, 244, 0.6), rgba(255, 244, 224, 0.85));
+}
+
+.page-header--gradient {
+  background: linear-gradient(135deg, var(--color-primary-200), var(--color-primary-100));
+}
+
+.page-header--left .page-header__content {
+  text-align: left;
+  align-items: flex-start;
+}
+
+.page-header--right .page-header__content {
+  text-align: right;
+  align-items: flex-end;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    padding: 3.5rem 1.5rem 4.25rem;
+  }
+
+  .page-header__description {
+    font-size: 1rem;
+  }
+}

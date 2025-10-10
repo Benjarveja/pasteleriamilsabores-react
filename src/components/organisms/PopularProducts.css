@@ -1,0 +1,21 @@
+.popular-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+}
+
+.popular-section__subtitle {
+    text-align: center;
+    color: rgba(93, 64, 55, 0.75);
+    margin: 0 auto 2.5rem;
+    max-width: 640px;
+    font-size: 1rem;
+}
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2.4rem;
+    align-items: stretch;
+    grid-auto-rows: minmax(0, 1fr);
+}
