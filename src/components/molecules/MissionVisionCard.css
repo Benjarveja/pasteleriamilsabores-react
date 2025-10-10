@@ -1,0 +1,26 @@
+.mv-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 192, 203, 0.45);
+  width: min(100%, 360px);
+  display: grid;
+  gap: 1rem;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.mv-card__title {
+  font-family: var(--font-secondary);
+  font-size: 1.75rem;
+  color: var(--brand-brown-dark);
+  margin: 0;
+}
+
+.mv-card__description {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(93, 64, 55, 0.85);
+  margin: 0;
+}

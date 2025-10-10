@@ -1,0 +1,107 @@
+.accordion-item {
+  border: 1px solid rgba(255, 192, 203, 0.35);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px -24px rgba(19, 17, 34, 0.25);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.accordion-item + .accordion-item {
+  margin-top: 1rem;
+}
+
+.accordion-item.is-open {
+  border-color: rgba(255, 166, 201, 0.55);
+  box-shadow: 0 24px 48px -24px rgba(19, 17, 34, 0.25);
+}
+
+.accordion-item__title {
+  margin: 0;
+}
+
+.accordion-item__trigger {
+  width: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.75rem;
+  font-size: 1.15rem;
+  color: var(--color-neutral-900);
+  cursor: pointer;
+  gap: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.accordion-item__trigger:hover,
+.accordion-item__trigger:focus-visible {
+  background-color: rgba(255, 192, 203, 0.15);
+  outline: none;
+}
+
+.accordion-item__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary-400);
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+
+.accordion-item__icon::before,
+.accordion-item__icon::after {
+  content: '';
+  position: absolute;
+  background: var(--color-primary-500);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.25s ease;
+}
+
+.accordion-item__icon::before {
+  width: 8px;
+  height: 2px;
+}
+
+.accordion-item__icon::after {
+  width: 2px;
+  height: 8px;
+}
+
+.accordion-item.is-open .accordion-item__icon {
+  background: var(--color-primary-100);
+}
+
+.accordion-item.is-open .accordion-item__icon::after {
+  opacity: 0;
+}
+
+.accordion-item__content {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.35s ease;
+  will-change: height;
+}
+
+.accordion-item__inner {
+  padding: 1rem 1.75rem 1.75rem;
+  color: var(--color-neutral-700);
+  line-height: 1.7;
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .accordion-item__trigger {
+    padding: 1.25rem 1.5rem;
+    font-size: 1.05rem;
+  }
+
+  .accordion-item__inner {
+    padding: 0.75rem 1.5rem 1.5rem;
+  }
+}
