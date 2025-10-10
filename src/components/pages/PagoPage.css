@@ -1,0 +1,78 @@
+.pago-page {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  padding-bottom: 6rem;
+}
+
+.pago-page__layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 3rem;
+}
+
+.pago-page__info {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.5rem;
+}
+
+.pago-page__column {
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 2.5rem;
+  box-shadow: 0 24px 52px -30px rgba(19, 17, 34, 0.35);
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pago-page__tips {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+  color: var(--color-neutral-600);
+  line-height: 1.65;
+}
+
+.pago-page__timeline {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 1.25rem;
+  color: var(--color-neutral-600);
+}
+
+.pago-page__timeline h3 {
+  margin: 0 0 0.25rem;
+  color: var(--color-neutral-900);
+  font-size: 1.1rem;
+}
+
+.pago-page__timeline p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
+  .pago-page__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .pago-page {
+    gap: 3rem;
+    padding-bottom: 4rem;
+  }
+
+  .pago-page__column {
+    padding: 2rem;
+  }
+}

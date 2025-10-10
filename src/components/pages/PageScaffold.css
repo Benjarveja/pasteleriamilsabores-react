@@ -1,0 +1,47 @@
+:root {
+  --page-max-width: 960px;
+  --page-vertical-gap: clamp(3rem, 5vw, 4.5rem);
+  --page-horizontal-padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.page-scaffold {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--page-vertical-gap) var(--page-horizontal-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--text-primary, #1f1f1f);
+}
+
+.page-scaffold__lead {
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  line-height: 1.8;
+  color: var(--text-secondary, #404040);
+}
+
+.page-scaffold__note {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-muted, #616161);
+}
+
+.page-scaffold__actions {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.page-scaffold__action {
+  color: var(--brand-secondary, #d35400);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.page-scaffold__action:hover {
+  color: var(--brand-primary, #b71c1c);
+  border-color: currentColor;
+}
