@@ -1,0 +1,86 @@
+.ms-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+
+.ms-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(19, 17, 34, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.ms-modal__panel {
+  position: relative;
+  max-height: min(90vh, 720px);
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 28px 70px -32px rgba(19, 17, 34, 0.55);
+  padding: 2.25rem 2.5rem;
+  width: min(90vw, 540px);
+  display: grid;
+  gap: 1.5rem;
+  z-index: 1;
+}
+
+.ms-modal__panel--lg {
+  width: min(90vw, 680px);
+}
+
+.ms-modal__panel--sm {
+  width: min(90vw, 420px);
+}
+
+.ms-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ms-modal__header h2 {
+  margin: 0;
+  font-size: 1.65rem;
+  color: var(--color-neutral-900);
+}
+
+.ms-modal__close {
+  border: none;
+  background: rgba(255, 192, 203, 0.25);
+  color: var(--color-primary-600);
+  font-size: 1.45rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.ms-modal__close:hover {
+  background: rgba(255, 192, 203, 0.45);
+  transform: scale(1.05);
+}
+
+.ms-modal__body {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .ms-modal__panel {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .ms-modal__header h2 {
+    font-size: 1.45rem;
+  }
+}

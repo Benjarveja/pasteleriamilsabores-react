@@ -1,0 +1,18 @@
+.section-title {
+  font-family: var(--font-secondary);
+  font-size: clamp(2rem, 2.5vw, 3rem);
+  margin: 0 auto 1.5rem;
+  color: var(--brand-brown-dark);
+}
+
+.section-title--left {
+  text-align: left;
+}
+
+.section-title--center {
+  text-align: center;
+}
+
+.section-title--right {
+  text-align: right;
+}

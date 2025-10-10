@@ -1,0 +1,70 @@
+.ms-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.ms-button--full {
+  width: 100%;
+}
+
+.ms-button--primary {
+  background-color: var(--brand-brown-light);
+  color: #fff;
+}
+
+.ms-button--primary:hover,
+.ms-button--primary:focus-visible {
+  background-color: var(--brand-brown-dark);
+}
+
+.ms-button--secondary {
+  background-color: transparent;
+  border: 2px solid var(--brand-brown-light);
+  color: var(--brand-brown-light);
+}
+
+.ms-button--secondary:hover,
+.ms-button--secondary:focus-visible {
+  border-color: var(--brand-brown-dark);
+  color: var(--brand-brown-dark);
+}
+
+.ms-button--ghost {
+  background-color: transparent;
+  color: var(--brand-brown-dark);
+}
+
+.ms-button--ghost:hover,
+.ms-button--ghost:focus-visible {
+  color: var(--brand-brown-light);
+}
+
+.ms-button--sm {
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+}
+
+.ms-button--md {
+  padding: 0.6rem 1.6rem;
+}
+
+.ms-button--lg {
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+}
+
+.ms-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
