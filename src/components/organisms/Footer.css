@@ -1,0 +1,130 @@
+.ms-footer {
+  background: linear-gradient(180deg, rgba(255, 192, 203, 0.2) 0%, rgba(255, 240, 242, 0.6) 100%);
+  padding-top: 3rem;
+  color: var(--brand-brown-dark);
+}
+
+.ms-footer__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2.5rem;
+  padding: 0 1.5rem 3rem;
+}
+
+.ms-footer__logo img {
+  width: 140px;
+  height: auto;
+}
+
+.ms-footer__column h4 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--brand-brown-light);
+}
+
+.ms-footer__column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.ms-footer__column ul li a {
+  color: var(--brand-brown-dark);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.ms-footer__column ul li a:hover {
+  color: var(--brand-brown-light);
+}
+
+.ms-footer__news li p {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  color: rgba(93, 64, 55, 0.7);
+}
+
+.ms-footer__instagram {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(64px, 1fr));
+  gap: 0.5rem;
+}
+
+.ms-footer__instagram img {
+  width: 100%;
+  aspect-ratio: 1;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+  .ms-footer__instagram {
+    grid-template-columns: repeat(3, minmax(70px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .ms-footer__instagram {
+    grid-template-columns: repeat(2, minmax(90px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .ms-footer__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.75rem;
+    padding-bottom: 2rem;
+  }
+
+  .ms-footer__column {
+    max-width: 420px;
+  }
+
+  .ms-footer__column:not(:first-child) {
+    display: none;
+  }
+
+  .ms-footer__logo img {
+    width: 120px;
+  }
+
+  .ms-footer__column:first-child {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    justify-items: start;
+    gap: 1rem;
+    text-align: left;
+  }
+
+  .ms-footer__column:first-child p {
+    margin: 0;
+    text-align: left;
+  }
+
+  .ms-footer__column:first-child p + p {
+    margin-top: 0.5rem;
+  }
+
+  .ms-footer__column p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(93, 64, 55, 0.8);
+  }
+}
+
+.ms-footer__bottom {
+  background: rgba(255, 192, 203, 0.5);
+  text-align: center;
+  padding: 1.2rem;
+  font-size: 0.9rem;
+}
