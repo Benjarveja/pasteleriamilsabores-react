@@ -344,11 +344,17 @@
         padding: 1rem;
         width: 100%;
         border-bottom: 1px solid rgba(0,0,0,0.05);
+        box-sizing: border-box; /* Ensure padding is included in width to avoid overflow */
     }
 
     .btn-comprar {
         margin-top: 1rem;
         border-radius: 0;
+        /* Ensure the comprar button fits within the mobile menu without causing horizontal scroll */
+        width: 100%;
+        box-sizing: border-box;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     .navbar-account {
