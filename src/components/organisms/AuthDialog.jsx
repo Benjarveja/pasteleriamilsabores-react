@@ -751,7 +751,7 @@ const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
       <div className="auth-dialog__fields">
         <label className={loginErrors.email ? 'has-error' : ''}>
           <span>Correo electrónico</span>
-          <input
+            <input
             type="email"
             name="email"
             value={loginState.email}
