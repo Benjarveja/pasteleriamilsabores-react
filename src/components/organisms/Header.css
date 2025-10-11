@@ -304,16 +304,23 @@
         position: absolute;
         top: 80px; /* Justo debajo del menú */
         left: 0;
-        width: 100%;
+        right: 0; /* Asegura que el menú no sobresalga del viewport */
+        width: auto;
         background-color: var(--brand-pink);
         flex-direction: column;
-        padding: 1rem 0;
+        padding: 1rem 1.9rem; /* Mantener el mismo padding horizontal que el header */
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         z-index: 100; /* Asegura que el menú esté sobre el contenido */
+        box-sizing: border-box;
+        overflow: hidden;
     }
 
     .navbar-links-wrapper.is-active {
         display: flex; /* Mostrar el menú desplegable */
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        max-width: 100%;
     }
 
     .navbar-links-left,
@@ -323,6 +330,7 @@
         width: 100%;
         /* Reseteamos el crecimiento para el layout móvil */
         flex-grow: 0;
+        box-sizing: border-box;
     }
 
     .navbar-links-left {
@@ -337,6 +345,7 @@
     .navbar-links-right li {
         width: 100%;
         text-align: center;
+        box-sizing: border-box;
     }
 
     .navbar-links-wrapper a {
@@ -446,5 +455,10 @@
     }
     .navbar-toggler.is-active .navbar-toggler-icon::after {
         transform: translateY(-9px) rotate(-45deg);
+    }
+
+    /* Evitar cualquier overflow horizontal cuando el menú está abierto en móvil */
+    .navbar {
+        overflow-x: hidden;
     }
 }
