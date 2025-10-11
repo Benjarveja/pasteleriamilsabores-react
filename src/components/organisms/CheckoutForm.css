@@ -1,6 +1,10 @@
 .checkout-form {
   display: grid;
   gap: 3rem;
+  box-sizing: border-box;
+  /* Ensure long words or strings break to avoid horizontal overflow on small screens */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .checkout-form__intro {
@@ -18,11 +22,15 @@
   padding: 1.25rem 1.5rem;
   border-radius: 16px;
   color: var(--color-neutral-700);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .checkout-form__cta p,
 .checkout-form__welcome p {
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .checkout-form__status {
@@ -200,6 +208,8 @@
   display: grid;
   gap: 0.35rem;
   color: var(--color-neutral-700);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .checkout-form__radio span {
@@ -227,6 +237,8 @@
   margin: 0;
   color: var(--color-neutral-600);
   line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .checkout-form__support {
@@ -248,6 +260,8 @@
 .checkout-form__support p {
   margin: 0;
   color: var(--color-neutral-600);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .checkout-form__support ul {
