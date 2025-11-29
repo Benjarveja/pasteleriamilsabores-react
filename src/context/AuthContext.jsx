@@ -1,247 +1,238 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { authService } from '../services/authService';
+import { userService } from '../services/userService';
+import { orderService } from '../services/orderService';
+import { tokenStorage } from '../services/tokenStorage';
 
 const AuthContext = createContext();
-const STORAGE_KEY = 'milSaboresUsers';
-const SESSION_KEY = 'milSaboresSession';
-const ORDERS_KEY = 'milSaboresOrders';
 
-const composeFullAddress = ({ street, comuna, region }) =>
+const composeAddress = ({ street, comuna, region }) =>
   [street, comuna, region].filter(Boolean).join(', ');
 
-const normalizeUser = (candidate) => {
-  if (!candidate) return candidate;
-  const street = candidate.street ?? candidate.address ?? '';
-  const region = candidate.region ?? '';
-  const comuna = candidate.comuna ?? '';
-  const birthDate = candidate.birthDate ?? '';
-  const address = composeFullAddress({ street, comuna, region }) || candidate.address || '';
-
+const toProfile = (payload) => {
+  if (!payload) return null;
   return {
-    ...candidate,
-    street,
-    region,
-    comuna,
-    address,
-    birthDate,
+    ...payload,
+    address: payload.address ?? composeAddress(payload),
   };
 };
 
-const TEST_USER = {
-  id: 'demo-user',
-  email: 'cliente@milsabores.cl',
-  password: 'MilSabores123',
-  firstName: 'Fernanda',
-  lastName: 'Donoso',
-  run: '12.345.678-5',
-  phone: '987654321',
-  birthDate: '1970-03-21',
-  region: 'Región Metropolitana de Santiago',
-  comuna: 'Providencia',
-  street: 'Av. Siempre Viva 742, Depto 45',
-  address: 'Av. Siempre Viva 742, Depto 45, Providencia, Región Metropolitana de Santiago',
-};
-
-const DEFAULT_ORDERS = [
-  {
-    id: 'order-20250712',
-    userId: 'demo-user',
-    number: 'MS-1027',
-    placedAt: '2025-07-12T15:30:00-04:00',
-    deliveryMethod: 'Retiro en tienda',
-    status: 'Entregado',
-    paymentMethod: 'Tarjeta de crédito',
-    total: 28990,
-    items: [
-      { codigo: 'TC001', nombre: 'Torta Tres Leches', cantidad: 1, precio: 18990 },
-      { codigo: 'PV001', nombre: 'Pie de Maracuyá', cantidad: 1, precio: 10000 },
-    ],
-  },
-  {
-    id: 'order-20250802',
-    userId: 'demo-user',
-    number: 'MS-1042',
-    placedAt: '2025-08-02T11:10:00-04:00',
-    deliveryMethod: 'Delivery programado',
-    status: 'En preparación',
-    paymentMethod: 'Transferencia bancaria',
-    total: 36980,
-    items: [
-      { codigo: 'TT001', nombre: 'Torta de Chocolate Amargo', cantidad: 1, precio: 24990 },
-      { codigo: 'TE001', nombre: 'Té de frutos rojos (blend)', cantidad: 2, precio: 5995 },
-    ],
-  },
-];
-
-const loadUsers = () => {
-  if (typeof window === 'undefined') return [normalizeUser(TEST_USER)];
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [normalizeUser(TEST_USER)];
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [normalizeUser(TEST_USER)];
-    }
-    const normalized = parsed.map(normalizeUser);
-    const hasDemo = parsed.some((user) => user.id === TEST_USER.id);
-    return hasDemo ? normalized : [normalizeUser(TEST_USER), ...normalized];
-  } catch (error) {
-    console.error('Error loading users from storage', error);
-    return [normalizeUser(TEST_USER)];
-  }
-};
-
-const loadSession = () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = window.localStorage.getItem(SESSION_KEY);
-    return stored ? normalizeUser(JSON.parse(stored)) : null;
-  } catch (error) {
-    console.error('Error loading session from storage', error);
-    return null;
-  }
-};
-
-const loadOrders = () => {
-  if (typeof window === 'undefined') return DEFAULT_ORDERS;
-  try {
-    const stored = window.localStorage.getItem(ORDERS_KEY);
-    if (!stored) {
-      return DEFAULT_ORDERS;
-    }
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed)) {
-      return DEFAULT_ORDERS;
-    }
-    return parsed.length > 0 ? parsed : DEFAULT_ORDERS;
-  } catch (error) {
-    console.error('Error loading orders from storage', error);
-    return DEFAULT_ORDERS;
-  }
-};
+const POLLING_INTERVAL_MS = 20000;
 
 export const AuthProvider = ({ children }) => {
-  const [users, setUsers] = useState(loadUsers);
-  const [user, setUser] = useState(loadSession);
-  const [orders, setOrders] = useState(loadOrders);
+  const [user, setUser] = useState(() => toProfile(tokenStorage.getSession()));
+  const [orders, setOrders] = useState([]);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
+  const [ordersStatus, setOrdersStatus] = useState('idle');
+  const [ordersError, setOrdersError] = useState(null);
+  const [initialized, setInitialized] = useState(false);
+  const [initializingError, setInitializingError] = useState(null);
 
-  const persistUsers = (nextUsers) => {
-    const normalized = nextUsers.map(normalizeUser);
-    setUsers(normalized);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    }
-  };
+  const [pollingEnabled, setPollingEnabled] = useState(false);
 
-  const persistOrders = (nextOrders) => {
-    setOrders(nextOrders);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(ORDERS_KEY, JSON.stringify(nextOrders));
-    }
-  };
-
-  const persistSession = (nextUser) => {
-    const normalized = normalizeUser(nextUser);
-    setUser(normalized);
-    if (typeof window !== 'undefined') {
-      if (normalized) {
-        window.localStorage.setItem(SESSION_KEY, JSON.stringify(normalized));
-      } else {
-        window.localStorage.removeItem(SESSION_KEY);
+  useEffect(() => {
+    const bootstrapSession = async () => {
+      const stored = tokenStorage.getTokens();
+      if (!stored?.token) {
+        setInitialized(true);
+        return;
       }
-    }
-  };
-
-  const login = ({ email, password }) => {
-    const match = users.find((candidate) => candidate.email === email.trim().toLowerCase());
-    if (!match || match.password !== password) {
-      throw new Error('Credenciales inválidas. Revisa tu correo y contraseña.');
-    }
-    persistSession(match);
-    return normalizeUser(match);
-  };
-
-  const register = ({
-    email,
-    password,
-    firstName,
-    lastName,
-    phone,
-    run,
-    street,
-    region,
-    comuna,
-    birthDate,
-  }) => {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (users.some((candidate) => candidate.email === normalizedEmail)) {
-      throw new Error('Ya existe una cuenta registrada con este correo.');
-    }
-    const newUser = {
-      id: `user-${Date.now()}`,
-      email: normalizedEmail,
-      password,
-      firstName,
-      lastName,
-      phone,
-      run,
-      street,
-      region,
-      comuna,
-      birthDate: birthDate ?? '',
+      try {
+        setStatus('loading');
+        const profile = await fetchProfile();
+        if (profile) {
+          await loadOrders(stored.token);
+          setStatus('authenticated');
+          setPollingEnabled(true);
+        } else {
+          setStatus('idle');
+        }
+        setInitializingError(null);
+      } catch (error) {
+        setInitializingError(error.message || 'No pudimos restaurar tu sesión.');
+        logout();
+        setStatus('idle');
+      } finally {
+        setInitialized(true);
+      }
     };
-    const nextUsers = [...users, newUser];
-    persistUsers(nextUsers);
-    persistSession(newUser);
-    return normalizeUser(newUser);
+    bootstrapSession();
+  }, []);
+
+  useEffect(() => {
+    if (!pollingEnabled) return undefined;
+    const interval = setInterval(async () => {
+      try {
+        await ensureOrdersLoaded();
+      } catch (err) {
+        console.warn('Failed to refresh orders', err);
+      }
+    }, POLLING_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [pollingEnabled]);
+
+  const ensureOrdersLoaded = async () => {
+    const stored = tokenStorage.getTokens();
+    if (!stored?.token) {
+      setOrders([]);
+      return [];
+    }
+    return loadOrders(stored.token);
+  };
+
+  const persistSession = (profile) => {
+    setUser(profile);
+    if (profile) {
+      tokenStorage.saveSession(profile);
+    } else {
+      tokenStorage.clearSession();
+    }
+  };
+
+  const handleAuthSuccess = ({ profile }) => {
+    const formatted = toProfile(profile);
+    persistSession(formatted);
+    return formatted;
+  };
+
+  const login = async (credentials) => {
+    setStatus('auth-loading');
+    setError(null);
+    try {
+      const response = await authService.login(credentials);
+      const profile = handleAuthSuccess(response);
+      await loadOrders(response.tokens.token);
+      setStatus('authenticated');
+      setPollingEnabled(true);
+      return profile;
+    } catch (err) {
+      setStatus('error');
+      setError(err.message || 'No pudimos iniciar sesión.');
+      throw err;
+    }
+  };
+
+  const register = async (payload) => {
+    setStatus('register-loading');
+    setError(null);
+    try {
+      const response = await authService.register(payload);
+      const profile = handleAuthSuccess(response);
+      setStatus('authenticated');
+      setPollingEnabled(true);
+      return profile;
+    } catch (err) {
+      setStatus('error');
+      setError(err.message || 'No pudimos registrar tu cuenta.');
+      throw err;
+    }
+  };
+
+  const refreshSession = async () => {
+    try {
+      setStatus('refreshing');
+      const response = await authService.refresh();
+      const profile = handleAuthSuccess(response);
+      setStatus('authenticated');
+      setPollingEnabled(true);
+      return profile;
+    } catch (err) {
+      logout();
+      setStatus('idle');
+      setPollingEnabled(false);
+      throw err;
+    }
+  };
+
+  const fetchProfile = async () => {
+    const stored = tokenStorage.getTokens();
+    if (!stored?.token) return null;
+    const remoteProfile = await userService.fetchProfile(stored.token);
+    const formatted = toProfile(remoteProfile);
+    persistSession(formatted);
+    return formatted;
   };
 
   const logout = () => {
+    tokenStorage.clearAll();
+    setOrders([]);
     persistSession(null);
+    setPollingEnabled(false);
   };
 
-  const updateProfile = (updates) => {
-    if (!user) {
+  const updateProfile = async (updates) => {
+    const stored = tokenStorage.getTokens();
+    if (!stored?.token) {
       throw new Error('No hay sesión activa.');
     }
-    const normalizedEmail = updates.email?.trim().toLowerCase() ?? user.email;
-    if (normalizedEmail !== user.email && users.some((candidate) => candidate.email === normalizedEmail)) {
-      throw new Error('El correo indicado ya está asociado a otra cuenta.');
-    }
-
-    const composedAddress = composeFullAddress({ street: updates.street ?? user.street, comuna: updates.comuna ?? user.comuna, region: updates.region ?? user.region });
-
-    const nextUser = normalizeUser({
-      ...user,
-      ...updates,
-      email: normalizedEmail,
-      address: composedAddress,
-    });
-
-    const nextUsers = users.map((candidate) =>
-      candidate.id === user.id ? nextUser : candidate,
-    );
-
-    persistUsers(nextUsers);
-    persistSession(nextUser);
-    return nextUser;
+    const profile = await userService.updateProfile(stored.token, updates);
+    const formatted = toProfile(profile);
+    persistSession(formatted);
+    return formatted;
   };
 
-  const addOrder = (order) => {
-    persistOrders([...orders, order]);
+  const loadOrders = async (tokenOverride) => {
+    const stored = tokenOverride ? { token: tokenOverride } : tokenStorage.getTokens();
+    if (!stored?.token) {
+      setOrders([]);
+      return [];
+    }
+    setOrdersStatus('loading');
+    setOrdersError(null);
+    try {
+      const fetched = await orderService.getMyOrders(stored.token);
+      setOrders(fetched ?? []);
+      setOrdersStatus('loaded');
+      return fetched;
+    } catch (err) {
+      setOrdersError(err.message || 'No pudimos cargar tus pedidos.');
+      setOrdersStatus('error');
+      throw err;
+    }
+  };
+
+  const refreshOrders = async () => ensureOrdersLoaded();
+
+  const addOrder = async () => {
+    const stored = tokenStorage.getTokens();
+    if (stored?.token) {
+      await loadOrders(stored.token);
+      setPollingEnabled(true);
+    }
   };
 
   const value = useMemo(
     () => ({
       user,
-      users,
+      status,
+      error,
+      orders,
+      ordersStatus,
+      ordersError,
+      initialized,
+      initializingError,
       login,
       register,
+      refreshSession,
+      fetchProfile,
       logout,
       updateProfile,
-      orders,
+      loadOrders,
+      ensureOrdersLoaded,
+      refreshOrders,
       addOrder,
     }),
-    [user, users, orders],
+    [
+      user,
+      status,
+      error,
+      orders,
+      ordersStatus,
+      ordersError,
+      initialized,
+      initializingError,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -3,6 +3,7 @@ import Modal from '../atoms/Modal';
 import Button from '../atoms/Button';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { formatDateLong } from '../../utils/formatDateLong';
 import products from '../../data/products';
 import { regions, getCommunesByRegion } from '../../data/locations';
 import { buildPurchaseSummary } from '../../utils/recommendations';
@@ -45,13 +46,6 @@ const initialProfileState = {
 
 const ACCOUNT_VIEWS = ['account', 'orders', 'purchases'];
 
-const formatDateLong = (value) =>
-  new Date(value).toLocaleDateString('es-CL', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-
 const slugify = (value) =>
   value
     .toLowerCase()
@@ -59,6 +53,56 @@ const slugify = (value) =>
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+
+const STATUS_ORDER = [
+  'CONFIRMADO',
+  'EN_PREPARACION',
+  'PEDIDO_PREPARADO',
+  'LISTO_PARA_RETIRAR',
+  'EN_ESPERA_DESPACHO',
+  'ENTREGADO',
+];
+
+const STATUS_LABELS = {
+  CONFIRMADO: 'Confirmado',
+  EN_PREPARACION: 'En preparación',
+  PEDIDO_PREPARADO: 'Pedido preparado',
+  LISTO_PARA_RETIRAR: 'Listo para retirar',
+  EN_ESPERA_DESPACHO: 'En espera de despacho',
+  ENTREGADO: 'Entregado',
+};
+
+const OrderStatusTimeline = ({ deliveryOption, status, statusHistory }) => {
+  const steps = useMemo(() => {
+    const pickupSteps = ['CONFIRMADO', 'EN_PREPARACION', 'PEDIDO_PREPARADO', 'LISTO_PARA_RETIRAR', 'ENTREGADO'];
+    const deliverySteps = ['CONFIRMADO', 'EN_PREPARACION', 'PEDIDO_PREPARADO', 'EN_ESPERA_DESPACHO', 'ENTREGADO'];
+    return deliveryOption === 'delivery' ? deliverySteps : pickupSteps;
+  }, [deliveryOption]);
+
+  const historyLookup = useMemo(() => {
+    const map = new Map();
+    (statusHistory || []).forEach((entry) => {
+      map.set(entry.status, entry.changedAt);
+    });
+    return map;
+  }, [statusHistory]);
+
+  return (
+    <ol className="auth-dialog__status-timeline">
+      {steps.map((step) => {
+        const isActive = STATUS_ORDER.indexOf(status) >= STATUS_ORDER.indexOf(step);
+        return (
+          <li key={step} className={isActive ? 'is-active' : ''}>
+            <div>
+              <strong>{STATUS_LABELS[step] || step}</strong>
+              {historyLookup.get(step) ? <small>{formatDateLong(historyLookup.get(step))}</small> : null}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+};
 
 const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
   const { login, register, user, updateProfile, orders } = useAuth();
@@ -583,7 +627,23 @@ const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
 
   const userOrders = useMemo(() => {
     if (!user) return [];
-    return orders.filter((order) => order.userId === user.id).sort((a, b) => new Date(b.placedAt) - new Date(a.placedAt));
+    return orders
+      .map((order) => ({
+        id: order.id,
+        number: order.code,
+        status: order.status,
+        placedAt: order.createdAt,
+        deliveryMethod: order.deliveryOption === 'delivery' ? 'Envío a domicilio' : 'Retiro en tienda',
+        deliveryOption: order.deliveryOption,
+        paymentMethod: order.paymentMethodLabel || order.paymentMethod,
+        total: order.total,
+        items: order.items || [],
+        statusHistory: order.statusHistory || [],
+        contactName: order.contactName,
+        contactPhone: order.contactPhone,
+        contactEmail: order.contactEmail,
+      }))
+      .sort((a, b) => new Date(b.placedAt) - new Date(a.placedAt));
   }, [orders, user]);
 
   const purchaseSummary = useMemo(
@@ -1158,8 +1218,15 @@ const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
                     <strong>Pedido {order.number}</strong>
                     <span>{formatDateLong(order.placedAt)}</span>
                   </div>
-                  <span className={`auth-dialog__badge auth-dialog__badge--${statusSlug}`}>{order.status}</span>
+                  <span className={`auth-dialog__badge auth-dialog__badge--${statusSlug}`}>
+                    {STATUS_LABELS[order.status] || order.status}
+                  </span>
                 </header>
+                <OrderStatusTimeline
+                  deliveryOption={order.deliveryOption}
+                  status={order.status}
+                  statusHistory={order.statusHistory}
+                />
                 <ul className="auth-dialog__order-products">
                   {order.items.map((item) => (
                     <li key={`${order.id}-${item.codigo}`}>
@@ -1183,6 +1250,11 @@ const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
                   <div>
                     <span>Total pagado</span>
                     <strong>{formatCurrency(order.total)}</strong>
+                  </div>
+                  <div>
+                    <span>Contacto</span>
+                    <strong>{order.contactName}</strong>
+                    <small>{order.contactEmail} · {order.contactPhone}</small>
                   </div>
                 </footer>
               </li>

@@ -19,14 +19,14 @@ export const checkoutService = {
       data: { couponCode: couponCode?.trim() || '' },
     }),
   submitOrder: async ({ checkout = {}, items = [], token } = {}) => {
-    if (!token) {
-      throw new Error('No hay sesión activa. Inicia sesión para continuar.');
-    }
     const payload = {
       ...checkout,
       items: mapCartItems(items),
     };
-    return apiClient.post(CHECKOUT_PATH, { token, data: payload });
+    return apiClient.post(CHECKOUT_PATH, {
+      token,
+      data: payload,
+      headers: token ? undefined : { Authorization: undefined },
+    });
   },
 };
-

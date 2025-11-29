@@ -3,6 +3,7 @@ import Button from '../atoms/Button';
 import SectionTitle from '../atoms/SectionTitle';
 import { deliveryOptions, paymentMethods, pickupBranches, pickupTimeSlots, supportChannels } from '../../data/checkout';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import { regions, getCommunesByRegion } from '../../data/locations';
 import { SENIOR_AGE_THRESHOLD } from '../../utils/discounts';
 import {
@@ -15,6 +16,8 @@ import {
   isValidRun,
   normalizePhone,
 } from '../../utils/validation';
+import { checkoutService } from '../../services/checkoutService';
+import { tokenStorage } from '../../services/tokenStorage';
 import './CheckoutForm.css';
 
 const createInitialFormState = (profile) => ({
@@ -42,11 +45,14 @@ const CheckoutForm = ({
   onPricingChange,
   couponCode = '',
 }) => {
-  const { user } = useAuth();
+  const { user, addOrder, status: authStatus, ensureOrdersLoaded } = useAuth();
+  const { items, clearCart } = useCart();
   const [formData, setFormData] = useState(() => createInitialFormState(user));
   const [status, setStatus] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState(null);
 
   const branchOptions = useMemo(
     () =>
@@ -382,15 +388,42 @@ const CheckoutForm = ({
       couponCode: couponCode.trim(),
     };
 
-    setStatus({
-      type: 'success',
-      message:
-        '¡Gracias! Revisaremos tus datos y te contactaremos para confirmar disponibilidad. Recibirás un correo con los siguientes pasos.',
-    });
-    onSubmitSuccess?.(payload);
-    setFormData(createInitialFormState(user));
-    setFormErrors({});
-    setTouchedFields({});
+    const proceedCheckout = async () => {
+      setIsSubmitting(true);
+      setServerError(null);
+      try {
+        const stored = tokenStorage.getTokens();
+        const hasSession = Boolean(stored?.token);
+        const response = await checkoutService.submitOrder({
+          checkout: payload,
+          items,
+          token: stored?.token,
+        });
+        if (hasSession) {
+          await addOrder();
+        } else {
+          await ensureOrdersLoaded();
+        }
+        clearCart?.();
+        onSubmitSuccess?.(response);
+        setStatus({
+          type: 'success',
+          message:
+            '¡Gracias! Revisaremos tus datos y te contactaremos para confirmar disponibilidad. Recibirás un correo con los siguientes pasos.',
+        });
+        setFormData(createInitialFormState(user));
+        setFormErrors({});
+        setTouchedFields({});
+      } catch (err) {
+        setServerError(err.message || 'No pudimos registrar tu pedido. Intenta nuevamente.');
+        setStatus({ type: 'error', message: 'No pudimos completar el checkout. Revisa el error e inténtalo otra vez.' });
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+
+    proceedCheckout();
   };
 
   return (
@@ -423,12 +456,18 @@ const CheckoutForm = ({
         )}
       </div>
 
-      {status ? (
-        <div className={`checkout-form__status checkout-form__status--${status.type}`}>
-          <p>{status.message}</p>
-          <Button type="button" variant="secondary" onClick={() => setStatus(null)}>
-            {status.type === 'success' ? 'Editar mis datos' : 'Corregir datos'}
-          </Button>
+      {serverError ? (
+        <div className="checkout-form__alert checkout-form__alert--error" role="alert">
+          {serverError}
+        </div>
+      ) : null}
+      {status?.type === 'success' ? (
+        <div className="checkout-form__alert checkout-form__alert--success" role="status">
+          {status.message}
+        </div>
+      ) : status?.type === 'error' ? (
+        <div className="checkout-form__alert checkout-form__alert--error" role="alert">
+          {status.message}
         </div>
       ) : null}
 
@@ -734,8 +773,8 @@ const CheckoutForm = ({
         </fieldset>
 
         <div className="checkout-form__actions">
-          <Button type="submit" variant="primary" disabled={isSubmitDisabled}>
-            {isSubmitDisabled ? 'Agrega productos para continuar' : 'Confirmar y avanzar al pago'}
+          <Button type="submit" variant="primary" disabled={isSubmitDisabled || isSubmitting}>
+            {isSubmitting ? 'Procesando…' : 'Confirmar compra'}
           </Button>
           <p>
             Recibirás un correo con el detalle de tu pedido y un enlace para completar el pago de forma segura. Ante

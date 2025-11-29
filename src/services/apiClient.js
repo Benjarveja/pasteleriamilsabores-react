@@ -66,14 +66,15 @@ const buildHeaders = ({ token, hasBody, headers }) => {
     composed.set('Content-Type', 'application/json');
   }
   let authToken = token;
-  if (!authToken && token) {
-    authToken = typeof token === 'function' ? token() : token;
-  }
-  if (!authToken) {
+  if (authToken === undefined) {
     authToken = getStoredToken();
+  } else if (typeof authToken === 'function') {
+    authToken = authToken();
   }
-  if (authToken && !composed.has('Authorization')) {
+  if (authToken) {
     composed.set('Authorization', `Bearer ${authToken}`);
+  } else {
+    composed.delete('Authorization');
   }
   return composed;
 };
