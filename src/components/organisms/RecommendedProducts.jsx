@@ -4,7 +4,7 @@ import Button from '../atoms/Button';
 import ProductModal from './ProductModal';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import products from '../../data/products';
+import { useProducts } from '../../context/ProductContext';
 import { buildPurchaseSummary, getRecommendedProducts } from '../../utils/recommendations';
 import { formatCurrency } from '../../utils/formatCurrency';
 import './RecommendedProducts.css';
@@ -19,17 +19,18 @@ const formatDate = (value) =>
 const RecommendedProducts = () => {
   const { user, orders } = useAuth();
   const { addItem } = useCart();
+  const { products, status } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const recommendedProducts = useMemo(() => {
-    if (!user) {
+    if (!user || !products.length) {
       return [];
     }
     const summary = buildPurchaseSummary({ orders, userId: user.id, products });
     return getRecommendedProducts({ summary, products, limit: 4 });
-  }, [orders, user]);
+  }, [orders, user, products]);
 
-  if (!user || recommendedProducts.length === 0) {
+  if (!user || status !== 'loaded' || recommendedProducts.length === 0) {
     return null;
   }
 

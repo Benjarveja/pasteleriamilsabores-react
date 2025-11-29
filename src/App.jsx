@@ -9,49 +9,52 @@ import PagoPage from './components/pages/PagoPage';
 import MainLayout from './components/templates/MainLayout';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { ProductProvider } from './context/ProductContext';
 import './App.css';
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: 'productos',
-        element: <ProductosPage />,
-      },
-      {
-        path: 'nosotros',
-        element: <NosotrosPage />,
-      },
-      {
-        path: 'noticias',
-        element: <NoticiasPage />,
-      },
-      {
-        path: 'faq',
-        element: <FAQPage />,
-      },
-      {
-        path: 'pago',
-        element: <PagoPage />,
-      },
-    ],
-  },
+	{
+		path: '/',
+		element: <MainLayout />,
+		children: [
+			{
+				index: true,
+				element: <HomePage />,
+			},
+			{
+				path: 'productos',
+				element: <ProductosPage />,
+			},
+			{
+				path: 'nosotros',
+				element: <NosotrosPage />,
+			},
+			{
+				path: 'noticias',
+				element: <NoticiasPage />,
+			},
+			{
+				path: 'faq',
+				element: <FAQPage />,
+			},
+			{
+				path: 'pago',
+			 element: <PagoPage />,
+			},
+		],
+	},
 ]);
 
 function App() {
-  return (
-    <AuthProvider>
-      <CartProvider>
-        <RouterProvider router={router} />
-      </CartProvider>
-    </AuthProvider>
-  );
+	return (
+		<AuthProvider>
+			<ProductProvider>
+				<CartProvider>
+					<RouterProvider router={router} />
+				</CartProvider>
+			</ProductProvider>
+		</AuthProvider>
+	);
 }
 
 export default App;

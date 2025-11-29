@@ -4,7 +4,7 @@ import Button from '../atoms/Button';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDateLong } from '../../utils/formatDateLong';
-import products from '../../data/products';
+import { useProducts } from '../../context/ProductContext';
 import { regions, getCommunesByRegion } from '../../data/locations';
 import { buildPurchaseSummary } from '../../utils/recommendations';
 import {
@@ -106,6 +106,7 @@ const OrderStatusTimeline = ({ deliveryOption, status, statusHistory }) => {
 
 const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
   const { login, register, user, updateProfile, orders } = useAuth();
+  const { products } = useProducts();
   const [view, setView] = useState(initialView);
   const [loginState, setLoginState] = useState({ email: '', password: '', loading: false });
   const [loginErrors, setLoginErrors] = useState({});
@@ -648,7 +649,7 @@ const AuthDialog = ({ isOpen, onClose, initialView = 'menu' }) => {
 
   const purchaseSummary = useMemo(
     () => buildPurchaseSummary({ orders, userId: user?.id, products }),
-    [orders, user?.id],
+    [orders, user?.id, products],
   );
 
   const submitLogin = async (event) => {

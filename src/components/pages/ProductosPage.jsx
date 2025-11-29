@@ -4,7 +4,7 @@ import Button from '../atoms/Button';
 import ProductFilters from '../molecules/ProductFilters';
 import ProductCard from '../molecules/ProductCard';
 import ProductModal from '../organisms/ProductModal';
-import products, { productCategories, productPriceBounds } from '../../data/products';
+import { useProducts } from '../../context/ProductContext';
 import { useCart } from '../../context/CartContext';
 import './ProductosPage.css';
 
@@ -19,17 +19,22 @@ const ProductosPage = () => {
   const [filters, setFilters] = useState(defaultFilters);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { addItem } = useCart();
+  const { products, categories, priceBounds, status, error, refresh } = useProducts();
+  const effectiveProducts = products;
+  const effectiveCategories = categories;
+  const effectiveBounds = priceBounds;
 
   const filteredProducts = useMemo(() => {
+    if (!effectiveProducts.length) return [];
     const query = filters.query.trim().toLowerCase();
-    const minCandidate = filters.minPrice === '' ? productPriceBounds.min : Number(filters.minPrice);
-    const maxCandidate = filters.maxPrice === '' ? productPriceBounds.max : Number(filters.maxPrice);
-    const minPrice = Number.isFinite(minCandidate) ? minCandidate : productPriceBounds.min;
-    const maxPrice = Number.isFinite(maxCandidate) ? maxCandidate : productPriceBounds.max;
+    const minCandidate = filters.minPrice === '' ? effectiveBounds.min : Number(filters.minPrice);
+    const maxCandidate = filters.maxPrice === '' ? effectiveBounds.max : Number(filters.maxPrice);
+    const minPrice = Number.isFinite(minCandidate) ? minCandidate : effectiveBounds.min;
+    const maxPrice = Number.isFinite(maxCandidate) ? maxCandidate : effectiveBounds.max;
     const lowerBound = Math.min(minPrice, maxPrice);
     const upperBound = Math.max(minPrice, maxPrice);
 
-    return products.filter((product) => {
+    return effectiveProducts.filter((product) => {
       const matchesCategory = !filters.category || product.categoria === filters.category;
       const matchesQuery =
         query.length === 0 ||
@@ -40,7 +45,7 @@ const ProductosPage = () => {
 
       return matchesCategory && matchesQuery && matchesPrice;
     });
-  }, [filters]);
+  }, [filters, effectiveProducts, effectiveBounds]);
 
   const handleFiltersChange = (nextFilters) => {
     setFilters(nextFilters);
@@ -48,6 +53,9 @@ const ProductosPage = () => {
 
   const handleResetFilters = () => {
     setFilters(defaultFilters);
+    if (status === 'error') {
+      refresh();
+    }
   };
 
   const handleAddToCart = (product) => {
@@ -77,23 +85,38 @@ const ProductosPage = () => {
       </header>
 
       <ProductFilters
-        categories={productCategories}
+        categories={effectiveCategories}
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onReset={handleResetFilters}
-        priceBounds={productPriceBounds}
+        priceBounds={effectiveBounds}
       />
 
-      <div className="products-page__results" role="status" aria-live="polite">
-        <span>
-          {filteredProducts.length} {filteredProducts.length === 1 ? 'producto disponible' : 'productos disponibles'}
-        </span>
-        {activeFilters > 0 ? (
-          <span className="products-page__filters-indicator">
-            {activeFilters} {activeFilters === 1 ? 'filtro aplicado' : 'filtros aplicados'}
+      {status === 'loading' && products.length === 0 ? (
+        <div className="products-page__loading">Cargando catálogo...</div>
+      ) : null}
+      {status === 'error' && products.length === 0 ? (
+        <div className="products-page__error" role="alert">
+          <p>{error || 'No pudimos cargar el catálogo en este momento.'}</p>
+          <Button type="button" variant="primary" size="sm" onClick={refresh}>
+            Reintentar
+          </Button>
+        </div>
+      ) : null}
+
+      {status === 'loaded' ? (
+        <div className="products-page__results" role="status" aria-live="polite">
+          <span>
+            {filteredProducts.length}{' '}
+            {filteredProducts.length === 1 ? 'producto disponible' : 'productos disponibles'}
           </span>
-        ) : null}
-      </div>
+          {activeFilters > 0 ? (
+            <span className="products-page__filters-indicator">
+              {activeFilters} {activeFilters === 1 ? 'filtro aplicado' : 'filtros aplicados'}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {filteredProducts.length === 0 ? (
         <div className="products-page__empty">
@@ -102,7 +125,9 @@ const ProductosPage = () => {
             Restablecer filtros
           </Button>
         </div>
-      ) : (
+      ) : null}
+
+      {filteredProducts.length > 0 ? (
         <div className="products-page__grid">
           {filteredProducts.map((product) => (
             <ProductCard
@@ -113,7 +138,7 @@ const ProductosPage = () => {
             />
           ))}
         </div>
-      )}
+      ) : null}
 
       <ProductModal
         product={selectedProduct}
